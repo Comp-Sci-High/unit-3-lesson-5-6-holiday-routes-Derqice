@@ -1,0 +1,1039 @@
+/**
+ * Santa's Flight Game
+ * Player controls Santa to avoid falling presents and reach the Grinch
+ * Collect reindeer for bonus points!
+ */
+
+class SantaGame {
+  constructor() {
+    // Game state
+    this.isPlaying = false;
+    this.score = 0;
+    this.distance = 0;
+    this.reindeersCollected = 0;
+
+    // Santa (player) properties
+    this.santa = document.getElementById('santa');
+    this.santaX = 50;
+    this.santaY = window.innerHeight / 2;
+    this.santaSpeed = 5;
+    this.santaSize = 50; // approximation
+
+    // Controls
+    this.keys = {
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowRight: false,
+      ArrowLeft: false,
+      w: false,
+      W: false,
+      s: false,
+      S: false,
+      d: false,
+      D: false,
+      a: false,
+      A: false
+    };
+
+    // Game limits
+    this.minY = 0;
+    this.maxY = window.innerHeight - this.santaSize;
+    this.maxX = window.innerWidth - 100;
+
+    // Obstacles (falling presents)
+    this.obstacles = [];
+    this.obstaclesContainer = document.getElementById('obstacles');
+
+    // Collectibles (reindeer) - use same container as obstacles
+    this.reindeer = [];
+    this.collectiblesContainer = this.obstaclesContainer;
+
+    // Grinch (goal)
+    this.grinch = document.getElementById('grinch');
+    this.grinchX = window.innerWidth - 100;
+    this.grinchY = window.innerHeight / 2;
+
+    // UI elements
+    this.scoreDisplay = document.getElementById('score');
+    this.distanceDisplay = document.getElementById('distance');
+    this.reindeerDisplay = document.getElementById('reindeer-count');
+    this.gameOverScreen = document.getElementById('game-over');
+    this.finalScoreDisplay = document.getElementById('final-score');
+    this.restartButton = document.getElementById('restart-btn');
+
+    // Bind methods
+    this.update = this.update.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.spawnObstacle = this.spawnObstacle.bind(this);
+    this.spawnReindeer = this.spawnReindeer.bind(this);
+    this.checkCollisions = this.checkCollisions.bind(this);
+    this.gameOver = this.gameOver.bind(this);
+    this.restart = this.restart.bind(this);
+
+    // Initialize
+    this.init();
+  }
+
+  init() {
+    // Set up event listeners
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('keyup', this.handleKeyUp);
+    this.restartButton.addEventListener('click', this.restart);
+
+    // Start game loop
+    this.start();
+  }
+
+  start() {
+    this.isPlaying = true;
+    this.gameOverScreen.style.display = 'none';
+    this.update();
+  }
+
+  update() {
+    if (!this.isPlaying) return;
+
+    // Handle player input
+    this.handleInput();
+
+    // Update game objects
+    this.updateObstacles();
+    this.updateReindeer();
+    this.updateGrinchMovement();
+
+    // Check collisions
+    this.checkCollisions();
+
+    // Update UI
+    this.updateUI();
+
+    // Continue game loop
+    requestAnimationFrame(this.update);
+  }
+
+  handleInput() {
+    // Move Santa based on key presses
+    if (this.keys.ArrowUp || this.keys.w || this.keys.W) {
+      this.santaY -= this.santaSpeed;
+    }
+    if (this.keys.ArrowDown || this.keys.s || this.keys.S) {
+      this.santaY += this.santaSpeed;
+    }
+    if (this.keys.ArrowRight || this.keys.d || this.keys.D) {
+      this.santaX += this.santaSpeed;
+    }
+    if (this.keys.ArrowLeft || this.keys.a || this.keys.A) {
+      this.santaX -= this.santaSpeed;
+    }
+
+    // Keep Santa within bounds
+    this.santaY = Math.max(this.minY, Math.min(this.maxY, this.santaY));
+    this.santaX = Math.max(0, Math.min(this.maxX, this.santaX));
+
+    // Update Santa position
+    this.santa.style.left = this.santaX + 'px';
+    this.santa.style.top = this.santaY + 'px';
+  }
+
+  updateObstacles() {
+    // Move existing obstacles
+    this.obstacles.forEach((obstacle, index) => {
+      obstacle.y += obstacle.speed;
+      obstacle.element.style.top = obstacle.y + 'px';
+
+      // Remove obstacles that have fallen off screen
+      if (obstacle.y > window.innerHeight) {
+        obstacle.element.remove();
+        this.obstacles.splice(index, 1);
+      }
+    });
+
+    // Spawn new obstacles
+    if (Math.random() < 0.02) { // 2% chance per frame
+      this.spawnObstacle();
+    }
+  }
+
+  spawnObstacle() {
+    const obstacle = document.createElement('div');
+    obstacle.className = 'obstacle';
+    obstacle.textContent = '🎁';
+
+    const x = Math.random() * (window.innerWidth - 50);
+    const y = -50;
+
+    obstacle.style.left = x + 'px';
+    obstacle.style.top = y + 'px';
+
+    this.obstaclesContainer.appendChild(obstacle);
+
+    this.obstacles.push({
+      element: obstacle,
+      x: x,
+      y: y,
+      speed: 3 + Math.random() * 2
+    });
+  }
+
+  updateReindeer() {
+    // Move existing reindeer
+    this.reindeer.forEach((reindeer, index) => {
+      reindeer.y += reindeer.speed;
+      reindeer.element.style.top = reindeer.y + 'px';
+
+      // Remove reindeer that have fallen off screen
+      if (reindeer.y > window.innerHeight) {
+        reindeer.element.remove();
+        this.reindeer.splice(index, 1);
+      }
+    });
+
+    // Spawn new reindeer
+    if (Math.random() < 0.005) { // 0.5% chance per frame
+      this.spawnReindeer();
+    }
+  }
+
+  spawnReindeer() {
+    const reindeer = document.createElement('div');
+    reindeer.className = 'reindeer';
+    reindeer.textContent = '🦌';
+
+    const x = Math.random() * (window.innerWidth - 50);
+    const y = -50;
+
+    reindeer.style.left = x + 'px';
+    reindeer.style.top = y + 'px';
+
+    this.collectiblesContainer.appendChild(reindeer);
+
+    this.reindeer.push({
+      element: reindeer,
+      x: x,
+      y: y,
+      speed: 2 + Math.random() * 2
+    });
+  }
+
+  updateGrinchMovement() {
+    // Grinch chases Santa
+    const dx = this.santaX - this.grinchX;
+    const dy = this.santaY - this.grinchY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 0) {
+      // Move Grinch towards Santa
+      const speed = 1.5; // Grinch moves slower than Santa
+      this.grinchX += (dx / distance) * speed;
+      this.grinchY += (dy / distance) * speed;
+
+      // Keep Grinch within bounds
+      this.grinchX = Math.max(0, Math.min(window.innerWidth - 100, this.grinchX));
+      this.grinchY = Math.max(0, Math.min(window.innerHeight - 100, this.grinchY));
+
+      // Update Grinch position
+      this.grinch.style.left = this.grinchX + 'px';
+      this.grinch.style.top = this.grinchY + 'px';
+    }
+  }
+
+  checkCollisions() {
+    // Check obstacle collisions
+    this.obstacles.forEach((obstacle, index) => {
+      if (this.isColliding(this.santaX, this.santaY, this.santaSize, this.santaSize,
+                          obstacle.x, obstacle.y, 50, 50)) {
+        this.gameOver();
+      }
+    });
+
+    // Check reindeer collection
+    this.reindeer.forEach((reindeer, index) => {
+      if (this.isColliding(this.santaX, this.santaY, this.santaSize, this.santaSize,
+                          reindeer.x, reindeer.y, 50, 50)) {
+        // Collect reindeer
+        reindeer.element.remove();
+        this.reindeer.splice(index, 1);
+        this.reindeersCollected++;
+        this.score += 100;
+      }
+    });
+
+    // Check Grinch collision (lose condition - Grinch catches Santa!)
+    if (this.isColliding(this.santaX, this.santaY, this.santaSize, this.santaSize,
+                        this.grinchX, this.grinchY, 50, 50)) {
+      this.gameOverByGrinch(); // Lose
+    }
+  }
+
+  isColliding(x1, y1, w1, h1, x2, y2, w2, h2) {
+    return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+  }
+
+  updateUI() {
+    this.scoreDisplay.textContent = this.score;
+    this.distanceDisplay.textContent = Math.floor(this.distance);
+    this.reindeerDisplay.textContent = this.reindeersCollected;
+    this.distance += 0.1;
+  }
+
+  gameOver(didWin = false) {
+    this.isPlaying = false;
+    this.finalScoreDisplay.textContent = this.score + (didWin ? ' - You Won!' : ' - Game Over');
+    this.gameOverScreen.style.display = 'flex';
+  }
+
+  gameOverByGrinch() {
+    this.isPlaying = false;
+    this.finalScoreDisplay.textContent = this.score + ' - You Lose! The Grinch caught you!';
+    this.gameOverScreen.style.display = 'flex';
+  }
+
+  restart() {
+    // Reset game state
+    this.score = 0;
+    this.distance = 0;
+    this.reindeersCollected = 0;
+    this.santaX = 50;
+    this.santaY = window.innerHeight / 2;
+
+    // Clear obstacles and reindeer
+    this.obstacles.forEach(obstacle => obstacle.element.remove());
+    this.reindeer.forEach(reindeer => reindeer.element.remove());
+    this.obstacles = [];
+    this.reindeer = [];
+
+    // Restart game
+    this.start();
+  }
+
+  handleKeyDown(event) {
+    if (this.keys.hasOwnProperty(event.key)) {
+      this.keys[event.key] = true;
+      event.preventDefault();
+    }
+  }
+
+  handleKeyUp(event) {
+    if (this.keys.hasOwnProperty(event.key)) {
+      this.keys[event.key] = false;
+      event.preventDefault();
+    }
+  }
+}
+
+// Initialize game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new SantaGame();
+});
+
+    // Bind methods
+    this.update = this.update.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.spawnObstacle = this.spawnObstacle.bind(this);
+    this.spawnReindeer = this.spawnReindeer.bind(this);
+    this.checkCollisions = this.checkCollisions.bind(this);
+    this.gameOver = this.gameOver.bind(this);
+    this.restart = this.restart.bind(this);
+
+    // Initialize
+    this.init();
+  }
+
+  init() {
+    // Set up event listeners
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('keyup', this.handleKeyUp);
+    this.restartButton.addEventListener('click', this.restart);
+
+    // Start game loop
+    this.start();
+  }
+
+  start() {
+    this.isPlaying = true;
+    this.gameOverScreen.style.display = 'none';
+    this.update();
+  }
+
+  update() {
+    if (!this.isPlaying) return;
+
+    // Handle player input
+    this.handleInput();
+
+    // Update game objects
+    this.updateObstacles();
+    this.updateReindeer();
+    this.updateGrinchMovement();
+
+    // Check collisions
+    this.checkCollisions();
+
+    // Update UI
+    this.updateUI();
+
+    // Continue game loop
+    requestAnimationFrame(this.update);
+  }
+
+  handleInput() {
+    // Move Santa based on key presses
+    if (this.keys.ArrowUp || this.keys.w || this.keys.W) {
+      this.santaY -= this.santaSpeed;
+    }
+    if (this.keys.ArrowDown || this.keys.s || this.keys.S) {
+      this.santaY += this.santaSpeed;
+    }
+    if (this.keys.ArrowRight || this.keys.d || this.keys.D) {
+      this.santaX += this.santaSpeed;
+    }
+    if (this.keys.ArrowLeft || this.keys.a || this.keys.A) {
+      this.santaX -= this.santaSpeed;
+    }
+
+    // Keep Santa within bounds
+    this.santaY = Math.max(this.minY, Math.min(this.maxY, this.santaY));
+    this.santaX = Math.max(0, Math.min(this.maxX, this.santaX));
+
+    // Update Santa position
+    this.santa.style.left = this.santaX + 'px';
+    this.santa.style.top = this.santaY + 'px';
+  }
+
+  updateObstacles() {
+    // Move existing obstacles
+    this.obstacles.forEach((obstacle, index) => {
+      obstacle.y += obstacle.speed;
+      obstacle.element.style.top = obstacle.y + 'px';
+
+      // Remove obstacles that have fallen off screen
+      if (obstacle.y > window.innerHeight) {
+        obstacle.element.remove();
+        this.obstacles.splice(index, 1);
+      }
+    });
+
+    // Spawn new obstacles
+    if (Math.random() < 0.02) { // 2% chance per frame
+      this.spawnObstacle();
+    }
+  }
+
+  spawnObstacle() {
+    const obstacle = document.createElement('div');
+    obstacle.className = 'obstacle';
+    obstacle.textContent = '🎁';
+
+    const x = Math.random() * (window.innerWidth - 50);
+    const y = -50;
+
+    obstacle.style.left = x + 'px';
+    obstacle.style.top = y + 'px';
+
+    this.obstaclesContainer.appendChild(obstacle);
+
+    this.obstacles.push({
+      element: obstacle,
+      x: x,
+      y: y,
+      speed: 3 + Math.random() * 2
+    });
+  }
+
+  updateReindeer() {
+    // Move existing reindeer
+    this.reindeer.forEach((reindeer, index) => {
+      reindeer.y += reindeer.speed;
+      reindeer.element.style.top = reindeer.y + 'px';
+
+      // Remove reindeer that have fallen off screen
+      if (reindeer.y > window.innerHeight) {
+        reindeer.element.remove();
+        this.reindeer.splice(index, 1);
+      }
+    });
+
+    // Spawn new reindeer
+    if (Math.random() < 0.005) { // 0.5% chance per frame
+      this.spawnReindeer();
+    }
+  }
+
+  spawnReindeer() {
+    const reindeer = document.createElement('div');
+    reindeer.className = 'reindeer';
+    reindeer.textContent = '🦌';
+
+    const x = Math.random() * (window.innerWidth - 50);
+    const y = -50;
+
+    reindeer.style.left = x + 'px';
+    reindeer.style.top = y + 'px';
+
+    this.collectiblesContainer.appendChild(reindeer);
+
+    this.reindeer.push({
+      element: reindeer,
+      x: x,
+      y: y,
+      speed: 2 + Math.random() * 2
+    });
+  }
+
+  updateGrinchMovement() {
+    // Grinch chases Santa
+    const dx = this.santaX - this.grinchX;
+    const dy = this.santaY - this.grinchY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 0) {
+      // Move Grinch towards Santa
+      const speed = 1.5; // Grinch moves slower than Santa
+      this.grinchX += (dx / distance) * speed;
+      this.grinchY += (dy / distance) * speed;
+
+      // Keep Grinch within bounds
+      this.grinchX = Math.max(0, Math.min(window.innerWidth - 100, this.grinchX));
+      this.grinchY = Math.max(0, Math.min(window.innerHeight - 100, this.grinchY));
+
+      // Update Grinch position
+      this.grinch.style.left = this.grinchX + 'px';
+      this.grinch.style.top = this.grinchY + 'px';
+    }
+  }
+
+  checkCollisions() {
+    // Check obstacle collisions
+    this.obstacles.forEach((obstacle, index) => {
+      if (this.isColliding(this.santaX, this.santaY, this.santaSize, this.santaSize,
+                          obstacle.x, obstacle.y, 50, 50)) {
+        this.gameOver();
+      }
+    });
+
+    // Check reindeer collection
+    this.reindeer.forEach((reindeer, index) => {
+      if (this.isColliding(this.santaX, this.santaY, this.santaSize, this.santaSize,
+                          reindeer.x, reindeer.y, 50, 50)) {
+        // Collect reindeer
+        reindeer.element.remove();
+        this.reindeer.splice(index, 1);
+        this.reindeersCollected++;
+        this.score += 100;
+      }
+    });
+
+    // Check Grinch collision (lose condition - Grinch catches Santa!)
+    if (this.isColliding(this.santaX, this.santaY, this.santaSize, this.santaSize,
+                        this.grinchX, this.grinchY, 50, 50)) {
+      this.gameOverByGrinch(); // Lose
+    }
+  }
+
+  isColliding(x1, y1, w1, h1, x2, y2, w2, h2) {
+    return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+  }
+
+  updateUI() {
+    this.scoreDisplay.textContent = this.score;
+    this.distanceDisplay.textContent = Math.floor(this.distance);
+    this.reindeerDisplay.textContent = this.reindeersCollected;
+    this.distance += 0.1;
+  }
+
+  gameOver(didWin = false) {
+    this.isPlaying = false;
+    this.finalScoreDisplay.textContent = this.score + (didWin ? ' - You Won!' : ' - Game Over');
+    this.gameOverScreen.style.display = 'flex';
+  }
+
+  gameOverByGrinch() {
+    this.isPlaying = false;
+    this.finalScoreDisplay.textContent = this.score + ' - You Lose! The Grinch caught you!';
+    this.gameOverScreen.style.display = 'flex';
+  }
+
+  restart() {
+    // Reset game state
+    this.score = 0;
+    this.distance = 0;
+    this.reindeersCollected = 0;
+    this.santaX = 50;
+    this.santaY = window.innerHeight / 2;
+
+    // Clear obstacles and reindeer
+    this.obstacles.forEach(obstacle => obstacle.element.remove());
+    this.reindeer.forEach(reindeer => reindeer.element.remove());
+    this.obstacles = [];
+    this.reindeer = [];
+
+    // Restart game
+    this.start();
+  }
+
+  handleKeyDown(event) {
+    if (this.keys.hasOwnProperty(event.key)) {
+      this.keys[event.key] = true;
+      event.preventDefault();
+    }
+  }
+
+  handleKeyUp(event) {
+    if (this.keys.hasOwnProperty(event.key)) {
+      this.keys[event.key] = false;
+      event.preventDefault();
+    }
+  }
+}
+
+// Initialize game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new SantaGame();
+});
+    
+    // Goal
+    this.grinchGoal = document.getElementById('grinchGoal');
+    this.grinchX = window.innerWidth - 100;
+    this.grinchY = window.innerHeight / 2;
+    this.grinchSpeed = 1.5; // Slower than Santa
+    this.grinchSize = 60; // approximation
+    
+    // UI Elements
+    this.scoreDisplay = document.getElementById('score');
+    this.distanceDisplay = document.getElementById('distance');
+    this.messageDisplay = document.getElementById('message');
+    this.startBtn = document.getElementById('startBtn');
+    this.restartBtn = document.getElementById('restartBtn');
+    this.retryBtn = document.getElementById('retryBtn');
+    this.gameOverlay = document.getElementById('gameOverlay');
+    this.winScreen = document.getElementById('winScreen');
+    this.gameOverScreen = document.getElementById('gameOverScreen');
+    
+    this.init();
+  }
+  
+  /**
+   * Initialize the game
+   */
+  init() {
+    // Event listeners
+    document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+    
+    this.startBtn.addEventListener('click', () => this.startGame());
+    this.restartBtn.addEventListener('click', () => this.startGame());
+    this.retryBtn.addEventListener('click', () => this.startGame());
+    
+    // Hide controls info on mobile
+    if (window.innerWidth < 768) {
+      document.querySelector('.controls-info').style.display = 'none';
+    }
+    
+    this.updateSantaPosition();
+    this.updateGrinchPosition();
+  }
+  
+  /**
+   * Handle key down events
+   */
+  handleKeyDown(e) {
+    if (e.key in this.keys) {
+      this.keys[e.key] = true;
+      e.preventDefault();
+    }
+  }
+  
+  /**
+   * Handle key up events
+   */
+  handleKeyUp(e) {
+    if (e.key in this.keys) {
+      this.keys[e.key] = false;
+      e.preventDefault();
+    }
+  }
+  
+  /**
+   * Update Santa's position based on key presses
+   */
+  updateSantaMovement() {
+    if (!this.isPlaying) return;
+    
+    // Move up
+    if (this.keys.ArrowUp || this.keys.w || this.keys.W) {
+      this.santaY -= this.santaSpeed;
+    }
+    
+    // Move down
+    if (this.keys.ArrowDown || this.keys.s || this.keys.S) {
+      this.santaY += this.santaSpeed;
+    }
+    
+    // Move right
+    if (this.keys.ArrowRight || this.keys.d || this.keys.D) {
+      this.santaX += this.santaSpeed;
+    }
+    
+    // Move left
+    if (this.keys.ArrowLeft || this.keys.a || this.keys.A) {
+      this.santaX -= this.santaSpeed;
+    }
+    
+    // Constrain Santa to bounds
+    this.santaY = Math.max(this.minY, Math.min(this.maxY, this.santaY));
+    this.santaX = Math.max(0, Math.min(this.maxX, this.santaX));
+    
+    // Update visual position
+    this.updateSantaPosition();
+    
+    // Check distance progress
+    this.updateDistance();
+  }
+  
+  /**
+   * Update Santa's visual position
+   */
+  updateSantaPosition() {
+    this.santa.style.left = this.santaX + 'px';
+    this.santa.style.top = this.santaY + 'px';
+  }
+  
+  /**
+   * Update Grinch visual position
+   */
+  updateGrinchPosition() {
+    this.grinchGoal.style.left = this.grinchX + 'px';
+    this.grinchGoal.style.top = this.grinchY + 'px';
+  }
+  
+  /**
+   * Update Grinch movement to chase Santa
+   */
+  updateGrinchMovement() {
+    if (!this.isPlaying) return;
+    
+    // Calculate direction towards Santa
+    const dx = this.santaX - this.grinchX;
+    const dy = this.santaY - this.grinchY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 0) {
+      // Move towards Santa
+      this.grinchX += (dx / distance) * this.grinchSpeed;
+      this.grinchY += (dy / distance) * this.grinchSpeed;
+      
+      // Constrain Grinch to bounds (allow some off-screen for chasing)
+      this.grinchX = Math.max(-100, Math.min(window.innerWidth - 50, this.grinchX));
+      this.grinchY = Math.max(-100, Math.min(window.innerHeight - 50, this.grinchY));
+      
+      this.updateGrinchPosition();
+    }
+  }
+  
+  /**
+   * Update distance progress
+   */
+  updateDistance() {
+    this.distance = Math.floor((this.santaX / this.maxX) * 100);
+    this.distanceDisplay.textContent = this.distance;
+  }
+  
+  /**
+   * Create a falling present (obstacle)
+   */
+  createObstacle() {
+    if (!this.isPlaying) return;
+    
+    const obstacle = {
+      x: Math.random() * (window.innerWidth - 50),
+      y: -30,
+      radius: 25,
+      speed: Math.random() * 2 + 2,
+      element: null
+    };
+    
+    obstacle.element = document.createElement('div');
+    obstacle.element.classList.add('obstacle');
+    obstacle.element.textContent = '🎁';
+    obstacle.element.style.left = obstacle.x + 'px';
+    obstacle.element.style.top = obstacle.y + 'px';
+    
+    this.obstaclesContainer.appendChild(obstacle.element);
+    this.obstacles.push(obstacle);
+  }
+  
+  /**
+   * Create a collectible reindeer
+   */
+  createReindeer() {
+    if (!this.isPlaying) return;
+    
+    const reindeer = {
+      x: Math.random() * (window.innerWidth - 100) + 200,
+      y: Math.random() * (window.innerHeight - 100) + 50,
+      radius: 20,
+      element: null,
+      collected: false
+    };
+    
+    reindeer.element = document.createElement('div');
+    reindeer.element.classList.add('collectible');
+    reindeer.element.textContent = '🦌';
+    reindeer.element.style.left = reindeer.x + 'px';
+    reindeer.element.style.top = reindeer.y + 'px';
+    reindeer.element.style.animation = 'reindeerFloat 2s ease-in-out infinite';
+    
+    this.obstaclesContainer.appendChild(reindeer.element);
+    this.reindeer.push(reindeer);
+  }
+  
+  /**
+   * Update obstacles positions and check collisions
+   */
+  updateObstacles() {
+    for (let i = this.obstacles.length - 1; i >= 0; i--) {
+      const obstacle = this.obstacles[i];
+      
+      // Update position
+      obstacle.y += obstacle.speed;
+      obstacle.element.style.top = obstacle.y + 'px';
+      
+      // Check collision with Santa
+      if (this.checkCollision(obstacle)) {
+        this.gameOver();
+        return;
+      }
+      
+      // Remove if off-screen
+      if (obstacle.y > window.innerHeight) {
+        obstacle.element.remove();
+        this.obstacles.splice(i, 1);
+        this.score += 10; // Reward for avoiding
+        this.scoreDisplay.textContent = this.score;
+      }
+    }
+  }
+  
+  /**
+   * Update reindeer positions and check collection
+   */
+  updateReindeer() {
+    for (let i = this.reindeer.length - 1; i >= 0; i--) {
+      const deer = this.reindeer[i];
+      
+      if (deer.collected) continue;
+      
+      // Check collection
+      const distance = Math.sqrt(
+        Math.pow(this.santaX - deer.x, 2) + 
+        Math.pow(this.santaY - deer.y, 2)
+      );
+      
+      if (distance < 60) {
+        this.collectReindeer(deer, i);
+      }
+    }
+  }
+  
+  /**
+   * Collect a reindeer for bonus points
+   */
+  collectReindeer(deer, index) {
+    deer.collected = true;
+    deer.element.remove();
+    this.reindeer.splice(index, 1);
+    this.score += 50; // Bonus points for collecting reindeer
+    this.reindeersCollected++;
+    this.scoreDisplay.textContent = this.score;
+    this.messageDisplay.textContent = `🦌 Reindeer collected! (${this.reindeersCollected})`;
+    
+    // Clear message after 1 second
+    setTimeout(() => {
+      if (this.messageDisplay.textContent.includes('Reindeer')) {
+        this.messageDisplay.textContent = '';
+      }
+    }, 1000);
+  }
+  
+  /**
+   * Check collision between Santa and obstacle
+   */
+  checkCollision(obstacle) {
+    const distance = Math.sqrt(
+      Math.pow(this.santaX - obstacle.x, 2) + 
+      Math.pow(this.santaY - obstacle.y, 2)
+    );
+    
+    return distance < 50; // collision threshold
+  }
+  
+  /**
+   * Check collision between Santa and Grinch
+   */
+  checkGrinchCollision() {
+    const distance = Math.sqrt(
+      Math.pow(this.santaX - this.grinchX, 2) + 
+      Math.pow(this.santaY - this.grinchY, 2)
+    );
+    
+    return distance < 70; // collision threshold
+  }
+  
+  /**
+   * Start the game
+   */
+  startGame() {
+    // Reset
+    this.santaX = 50;
+    this.santaY = window.innerHeight / 2;
+    this.grinchX = window.innerWidth - 100;
+    this.grinchY = window.innerHeight / 2;
+    this.score = 0;
+    this.distance = 0;
+    this.reindeersCollected = 0;
+    this.obstacles = [];
+    this.reindeer = [];
+    this.obstaclesContainer.innerHTML = '';
+    
+    // Update displays
+    this.scoreDisplay.textContent = '0';
+    this.distanceDisplay.textContent = '0';
+    this.messageDisplay.textContent = '';
+    
+    // Hide overlays
+    this.gameOverlay.style.display = 'none';
+    this.winScreen.style.display = 'none';
+    this.gameOverScreen.style.display = 'none';
+    
+    // Start game
+    this.isPlaying = true;
+    this.updateSantaPosition();
+    this.updateGrinchPosition();
+    
+    console.log('🎮 Game Started');
+    
+    // Game loop
+    this.gameLoop();
+  }
+  
+  /**
+   * Main game loop
+   */
+  gameLoop() {
+    if (!this.isPlaying) return;
+    
+    // Update Santa movement
+    this.updateSantaMovement();
+    
+    // Update Grinch movement
+    this.updateGrinchMovement();
+    
+    // Update obstacles
+    this.updateObstacles();
+    
+    // Update collectibles
+    this.updateReindeer();
+    
+    // Check Grinch collision (lose condition)
+    if (this.checkGrinchCollision()) {
+      this.gameOverByGrinch();
+      return;
+    }
+    
+    // Check win condition
+    if (this.checkWinCondition()) {
+      this.win();
+      return;
+    }
+    
+    requestAnimationFrame(() => this.gameLoop());
+  }
+  
+  /**
+   * Handle game over (collision)
+   */
+  gameOver() {
+    this.isPlaying = false;
+    this.messageDisplay.textContent = '💥 Hit by a present!';
+    this.gameOverScreen.style.display = 'flex';
+    document.getElementById('gameOverTitle').textContent = '💥 Hit by a Present! 💥';
+    document.getElementById('gameOverScore').textContent = 
+      `Score: ${this.score} | Distance: ${this.distance}% | Reindeer: ${this.reindeersCollected}`;
+    
+    console.log('❌ Game Over - Score:', this.score, 'Reindeer:', this.reindeersCollected);
+  }
+  
+  /**
+   * Handle game over by Grinch collision
+   */
+  gameOverByGrinch() {
+    this.isPlaying = false;
+    this.messageDisplay.textContent = '👹 Caught by the Grinch! You Lose!';
+    this.gameOverScreen.style.display = 'flex';
+    document.getElementById('gameOverTitle').textContent = '👹 Caught by the Grinch! 👹';
+    document.getElementById('gameOverScore').textContent = 
+      `Score: ${this.score} | Distance: ${this.distance}% | Reindeer: ${this.reindeersCollected}`;
+    
+    console.log('❌ Game Over by Grinch - Score:', this.score, 'Reindeer:', this.reindeersCollected);
+  }
+  
+  /**
+   * Handle win (reached Grinch)
+   */
+  win() {
+    this.isPlaying = false;
+    this.messageDisplay.textContent = '✨ Level Complete!';
+    this.winScreen.style.display = 'flex';
+    document.getElementById('winScore').textContent = 
+      `🏆 Final Score: ${this.score} | Distance: 100% | Reindeer: ${this.reindeersCollected} 🦌`;
+    
+    console.log('✅ Victory! Score:', this.score, 'Reindeer:', this.reindeersCollected);
+  }
+}
+
+// Obstacle spawning system
+let gameInstance = null;
+
+function startObstacleSpawner() {
+  if (!gameInstance || !gameInstance.isPlaying) {
+    setTimeout(startObstacleSpawner, 100);
+    return;
+  }
+  
+  gameInstance.createObstacle();
+  
+  // Increase difficulty over time (spawn rate increases)
+  const difficulty = Math.min(1500, 2500 - gameInstance.distance * 5);
+  setTimeout(startObstacleSpawner, difficulty);
+}
+
+function startReindeerSpawner() {
+  if (!gameInstance || !gameInstance.isPlaying) {
+    setTimeout(startReindeerSpawner, 100);
+    return;
+  }
+  
+  gameInstance.createReindeer();
+  
+  // Spawn reindeer less frequently than obstacles
+  setTimeout(startReindeerSpawner, 3000 + Math.random() * 2000);
+}
+
+/**
+ * Initialize the game when DOM is ready
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  gameInstance = new SantaGame();
+  console.log('✅ Game instance created');
+  
+  // Start spawners when game starts
+  const originalStart = gameInstance.startGame.bind(gameInstance);
+  gameInstance.startGame = function() {
+    console.log('🎮 Starting game...');
+    originalStart();
+    startObstacleSpawner();
+    startReindeerSpawner();
+  };
+});

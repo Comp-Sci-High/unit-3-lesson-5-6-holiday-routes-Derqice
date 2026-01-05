@@ -8,5 +8,12 @@ app.get("/", (req, res) => {
 })
 
 app.listen(3000, () => {
-  console.log(`Holiday Server is Running!`)
+  console.log(`🎄 Holiday Server is Running! 🎄`)
+  console.log(`🌐 Open your browser and go to: http://localhost:3000`)
+  console.log(`🎮 Enjoy your holiday website! Press Ctrl+C to stop the server.`)
 });
+
+// Keep the server running
+setInterval(() => {
+  // Keep alive
+}, 1000);

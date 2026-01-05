@@ -1,0 +1,239 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0a1e3a 0%, #1a3a52 50%, #0d2d4a 100%);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Snowflakes container */
+.snowflakes-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  user-select: none;
+  animation: fall linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) translateX(var(--drift));
+    opacity: 0;
+  }
+}
+
+/* Container and layout */
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+header {
+  margin-bottom: 50px;
+  animation: slideDown 0.8s ease-out;
+}
+
+h1 {
+  font-size: clamp(2rem, 8vw, 4rem);
+  margin-bottom: 15px;
+  text-shadow: 0 0 20px rgba(255, 100, 200, 0.8), 
+               0 0 40px rgba(100, 200, 255, 0.6);
+  animation: glow 2s ease-in-out infinite;
+  letter-spacing: 2px;
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(255, 100, 200, 0.8), 
+                 0 0 40px rgba(100, 200, 255, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(255, 100, 200, 1), 
+                 0 0 60px rgba(100, 200, 255, 0.8);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tagline {
+  font-size: 1.3rem;
+  color: #e0e8ff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Main content */
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.destinations-card {
+  background: rgba(10, 50, 100, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 50px 40px;
+  border-radius: 20px;
+  border: 2px solid rgba(100, 200, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+  max-width: 600px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.destinations-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 40px;
+  color: #ffd700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.btn {
+  display: inline-block;
+  padding: 18px 50px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  min-width: 250px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-christmas {
+  background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
+  border: 2px solid #ff8888;
+  color: #fff;
+}
+
+.btn-christmas:hover {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8888 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 68, 68, 0.6);
+}
+
+.btn-game {
+  background: linear-gradient(135deg, #4444ff 0%, #6b6bff 100%);
+  border: 2px solid #8888ff;
+  color: #fff;
+}
+
+.btn-game:hover {
+  background: linear-gradient(135deg, #6b6bff 0%, #8888ff 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(68, 68, 255, 0.6);
+}
+
+.btn:active {
+  transform: translateY(-1px);
+}
+
+/* Footer */
+footer {
+  margin-top: 50px;
+  color: #b0c4ff;
+  font-size: 0.9rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Snow accumulation at bottom */
+.snow-accumulation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 8%;
+  background: linear-gradient(to top, #ffffff 0%, #f8f8ff 50%, #ffffff 100%);
+  border-top: 3px solid #e6e6fa;
+  z-index: 2;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .destinations-card {
+    padding: 40px 30px;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+}

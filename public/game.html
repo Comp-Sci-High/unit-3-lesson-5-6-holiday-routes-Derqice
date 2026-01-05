@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santa's Flight Game 🎮</title>
+  <link rel="stylesheet" href="game-style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="/" class="nav-btn">← Back to Home</a>
+  </nav>
+
+  <!-- Game container -->
+  <div class="game-container" id="gameContainer">
+    <!-- Sky background -->
+    <div class="sky"></div>
+
+    <!-- Snowflakes container -->
+    <div class="snowflakes-container" id="snowflakesContainer"></div>
+
+    <!-- Game elements -->
+    <div class="game-elements">
+      <!-- Santa (player character) -->
+      <div class="santa" id="santa">
+        🎅
+      </div>
+
+      <!-- Obstacles (falling coal) -->
+      <div class="obstacles" id="obstacles"></div>
+
+      <!-- Goal (Grinch at the end) -->
+      <div class="grinch-goal" id="grinchGoal">
+        👹 GRINCH
+      </div>
+    </div>
+
+    <!-- Game UI -->
+    <div class="game-ui">
+      <div class="score-board">
+        <p>Score: <span id="score">0</span></p>
+        <p>Distance: <span id="distance">0</span>%</p>
+        <p id="message"></p>
+      </div>
+
+      <div class="controls-info" id="controlsInfo">
+        <h3>Controls</h3>
+        <p>↑ UP / W - Move Up</p>
+        <p>↓ DOWN / S - Move Down</p>
+        <p>→ RIGHT / D - Move Right</p>
+        <p>🦌 Collect reindeer for +50 points!</p>
+        <p>Avoid coal and the Grinch!</p>
+        <p>Reach the Grinch to win!</p>
+      </div>
+    </div>
+
+    <!-- Game overlay (start/end screen) -->
+    <div class="game-overlay" id="gameOverlay">
+      <div class="overlay-content">
+        <h1>Santa's Flight Adventure 🎅</h1>
+        <p>Navigate Santa to the Grinch!</p>
+        <p>Avoid the falling coal (obstacles)</p>
+        <p>Use arrow keys or WASD to move</p>
+        <button class="btn-start" id="startBtn">START GAME</button>
+      </div>
+    </div>
+
+    <!-- Win screen -->
+    <div class="game-overlay win-screen" id="winScreen" style="display: none;">
+      <div class="overlay-content">
+        <h1>🎉 Level Complete! 🎉</h1>
+        <p id="winScore"></p>
+        <button class="btn-restart" id="restartBtn">PLAY AGAIN</button>
+        <a href="/" class="btn-home">Back to Home</a>
+      </div>
+    </div>
+
+    <!-- Game over screen -->
+    <div class="game-overlay game-over-screen" id="gameOverScreen" style="display: none;">
+      <div class="overlay-content">
+        <h1 id="gameOverTitle">💥 Hit! 💥</h1>
+        <p id="gameOverScore"></p>
+        <button class="btn-retry" id="retryBtn">RETRY</button>
+        <a href="/" class="btn-home">Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/snowflakes.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

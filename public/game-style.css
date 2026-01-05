@@ -1,0 +1,399 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Navigation */
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 200;
+}
+
+.nav-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.nav-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Game container */
+.game-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #0a1f4d 0%, #1a4d99 50%, #4d7fcc 100%);
+}
+
+/* Sky */
+.sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #0a1f4d 0%, #1a4d99 50%, #4d7fcc 100%);
+  z-index: 1;
+}
+
+/* Snowflakes */
+.snowflakes-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: #fff;
+  font-size: 1em;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  user-select: none;
+  animation: fall linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) translateX(var(--drift));
+    opacity: 0;
+  }
+}
+
+/* Game elements */
+.game-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+/* Santa (player) */
+.santa {
+  position: absolute;
+  left: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  z-index: 101;
+  transition: all 0.1s ease;
+  user-select: none;
+  cursor: default;
+}
+
+/* Obstacles container */
+.obstacles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+.obstacle {
+  position: absolute;
+  font-size: 2rem;
+  user-select: none;
+  color: #333;
+  text-shadow: 
+    0 0 2px #fff,
+    0 0 4px #fff,
+    0 0 6px #fff;
+}
+
+/* Goal (Grinch) */
+.grinch-goal {
+  position: absolute;
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3.5rem;
+  z-index: 101;
+  animation: grinchPulse 1.5s ease-in-out infinite;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+@keyframes grinchPulse {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.1);
+  }
+}
+
+/* Game UI */
+.game-ui {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 150;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 80px 20px 20px 20px;
+}
+
+.score-board {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px 30px;
+  border-radius: 10px;
+  border: 2px solid rgba(100, 200, 255, 0.5);
+  min-width: 200px;
+}
+
+.score-board p {
+  font-size: 1.1rem;
+  margin: 8px 0;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+#message {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.2rem;
+  min-height: 1.5rem;
+}
+
+.controls-info {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px 30px;
+  border-radius: 10px;
+  border: 2px solid rgba(100, 200, 255, 0.5);
+  max-width: 300px;
+}
+
+.controls-info h3 {
+  margin-bottom: 15px;
+  color: #ffd700;
+}
+
+.controls-info p {
+  font-size: 0.9rem;
+  margin: 5px 0;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.obstacle {
+  position: absolute;
+  font-size: 2rem;
+  user-select: none;
+}
+
+.collectible {
+  position: absolute;
+  font-size: 2.5rem;
+  user-select: none;
+  cursor: grab;
+  animation: reindeerFloat 2s ease-in-out infinite;
+}
+
+.reindeer {
+  position: absolute;
+  font-size: 2.5rem;
+  user-select: none;
+  cursor: grab;
+  animation: reindeerFloat 2s ease-in-out infinite;
+  color: #8B4513;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes reindeerFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+/* Overlays */
+.game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 300;
+}
+
+.overlay-content {
+  background: rgba(10, 50, 100, 0.9);
+  padding: 50px 40px;
+  border-radius: 20px;
+  border: 3px solid rgba(100, 200, 255, 0.6);
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 0 50px rgba(100, 200, 255, 0.3);
+}
+
+.overlay-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(255, 100, 200, 0.8);
+}
+
+.overlay-content p {
+  font-size: 1rem;
+  margin: 15px 0;
+  color: #e0e8ff;
+}
+
+#winScore,
+#gameOverScore {
+  font-size: 1.3rem;
+  color: #ffd700;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+/* Buttons */
+.btn-start,
+.btn-restart,
+.btn-retry {
+  padding: 15px 40px;
+  margin: 15px 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(255, 68, 68, 0.4);
+  pointer-events: all;
+}
+
+.btn-start:hover,
+.btn-restart:hover,
+.btn-retry:hover {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8888 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 68, 68, 0.6);
+}
+
+.btn-home {
+  display: inline-block;
+  padding: 12px 30px;
+  margin: 15px 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 10px;
+  background: rgba(100, 200, 255, 0.3);
+  color: #fff;
+  border: 2px solid rgba(100, 200, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: all;
+}
+
+.btn-home:hover {
+  background: rgba(100, 200, 255, 0.5);
+  border-color: rgba(100, 200, 255, 1);
+}
+
+/* Win/Game Over screens */
+.win-screen .overlay-content {
+  border-color: rgba(100, 255, 100, 0.6);
+  background: rgba(10, 100, 10, 0.9);
+}
+
+.win-screen h1 {
+  color: #00ff00;
+}
+
+.game-over-screen .overlay-content {
+  border-color: rgba(255, 100, 100, 0.6);
+  background: rgba(100, 10, 10, 0.9);
+}
+
+.game-over-screen h1 {
+  color: #ff4444;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .game-ui {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .score-board,
+  .controls-info {
+    margin-bottom: 10px;
+  }
+
+  .controls-info {
+    display: none;
+  }
+
+  .overlay-content {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+
+  .overlay-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .santa {
+    font-size: 2rem;
+  }
+
+  .grinch-goal {
+    font-size: 2.5rem;
+  }
+
+  .obstacle {
+    font-size: 1.5rem;
+  }
+}
